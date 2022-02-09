@@ -85,7 +85,7 @@ def CalcMain(flag_just_time_1min, flag_just_time_1hour, data_now,data_sum, data_
 				# デモ用
 				print("money=" + str(money) + ",close=" + str(data_now[1]),end=",")
 				print(data_bb,end=",")
-				with open('1min_eth_BB.csv', mode='a') as f:
+				with open('1hour_eth_BB.csv', mode='a') as f:
 					print("money=" + str(money) + ",close=" + str(data_now[1]),end=",", file=f)
 					print(data_bb,end=",", file=f)
 				# エントリーまたは決済の処理
@@ -94,7 +94,7 @@ def CalcMain(flag_just_time_1min, flag_just_time_1hour, data_now,data_sum, data_
 						# 損切りの処理
 						# デモ用
 						print("損切り", end=',')
-						with open('1min_eth_BB.csv', mode='a') as f:
+						with open('1hour_eth_BB.csv', mode='a') as f:
 							print("損切り",end=",", file=f)
 						kline = GetKline()
 						if flag_position == "BUY":
@@ -121,7 +121,7 @@ def CalcMain(flag_just_time_1min, flag_just_time_1hour, data_now,data_sum, data_
 						flag_plus = 0
 						flag_minus = 0
 						print("決済処理", end=",")
-						with open('1min_eth_BB.csv', mode='a') as f:
+						with open('1hour_eth_BB.csv', mode='a') as f:
 							print("決済処理",end=",", file=f)
 				else: # ポジションが入っていない時の処理
 					if int(data_now[1]) >= int(data_bb['upper']):
@@ -149,14 +149,14 @@ def CalcMain(flag_just_time_1min, flag_just_time_1hour, data_now,data_sum, data_
 						else:
 							money_tmp = kline[1]
 						print("注文処理", end=",")
-						with open('1min_eth_BB.csv', mode='a') as f:
+						with open('1hour_eth_BB.csv', mode='a') as f:
 							print("注文処理",end=",", file=f)
 
 				data_bb_20 = data_bb_20[1:] # data_bb_20の先頭データを削除する
 				cnt_bb_20 = 19 # 直前の20個のデータから19個を使うので初回以降はcnt_bb_20=19とすることで1個だけ新しいデータを追加する
 			# デモ用
 			print(data_now[0] +  ",flag_position=" + flag_position + ",flag_plus=" + str(flag_plus) + ",flag_minus=" + str(flag_minus))
-			with open('1min_eth_BB.csv', mode='a') as f:
+			with open('1hour_eth_BB.csv', mode='a') as f:
 				print(data_now[0] +  ",flag_position=" + flag_position + ",flag_plus=" + str(flag_plus) + ",flag_minus=" + str(flag_minus), file=f)
 
 	# デモ用　money,money_tmp
