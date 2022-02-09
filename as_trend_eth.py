@@ -17,15 +17,27 @@ pathGetKline     = '/v1/orderbooks?symbol=ETH_JPY'
 # ********** function ****************
 # 現在のレートをAPIで取得
 def GetRate():
-	response = requests.get(endPoint + pathGetRate)
-	data = [response.json()['data'][0]['timestamp'].replace('T',' ')[:-5],response.json()['data'][0]['last']]
-	return data
+	while True:
+		try:
+			response = requests.get(endPoint + pathGetRate)
+			data = [response.json()['data'][0]['timestamp'].replace('T',' ')[:-5],response.json()['data'][0]['last']]
+			return data
+		except requests.exceptions.RequestException as e:
+			print("最新の価格取得でエラー発生 : ",e)
+			print("10秒待機してやり直します")
+			time.sleep(10)
 
 # 現在の板取引情報をAPIで取得（売り、買いはそれぞれ最良気配のものを取得）
 def GetKline():
-	response = requests.get(endPoint + pathGetKline)
-	data = response.json()
-	return int(data['data']['asks'][0]['price']), int(data['data']['bids'][0]['price'])
+	while True:
+		try:
+			response = requests.get(endPoint + pathGetKline)
+			data = response.json()
+			return int(data['data']['asks'][0]['price']), int(data['data']['bids'][0]['price'])
+		except requests.exceptions.RequestException as e:
+			print("最新の板取得でエラー発生 : ",e)
+			print("10秒待機してやり直します")
+			time.sleep(10)
 
 # 現在地から1分ごとのデータを抽出
 # データ間隔を変更する場合はコードを直接編集する必要がある
@@ -149,6 +161,7 @@ money = 0 # デモ用の所持金の変数
 while True:
 	data_now = GetRate()
 	flag_just_time = ExtractJustTime(data_now[0])
+	# デモ用
 	# ポジションの有無をAPIで取得するからflaf_positionは消す
 	data_sum,data_bb_20,cnt_bb_20,flag_plus,flag_minus,flag_position,money = CalcMain(flag_just_time,data_now,data_sum,data_bb_20,cnt_bb_20,flag_plus,flag_minus,flag_position,money)
 
