@@ -20,8 +20,12 @@ def GetRate():
 	while True:
 		try:
 			response = requests.get(endPoint + pathGetRate)
-			data = [response.json()['data'][0]['timestamp'].replace('T',' ')[:-5],response.json()['data'][0]['last']]
-			return data
+			if 'json' in response.headers.get('content-type'):
+				data = [response.json()['data'][0]['timestamp'].replace('T',' ')[:-5],response.json()['data'][0]['last']]
+				return data
+			else:
+				data = 0
+				return data
 		except requests.exceptions.RequestException as e:
 			print("最新の価格取得でエラー発生 : ",e)
 			print("10秒待機してやり直します")
@@ -32,8 +36,12 @@ def GetKline():
 	while True:
 		try:
 			response = requests.get(endPoint + pathGetKline)
-			data = response.json()
-			return int(data['data']['asks'][0]['price']), int(data['data']['bids'][0]['price'])
+			if 'json' in response.headers.get('content-type'):
+				data = response.json()
+				return int(data['data']['asks'][0]['price']), int(data['data']['bids'][0]['price'])
+			else:
+				data = 0
+				return data
 		except requests.exceptions.RequestException as e:
 			print("最新の板取得でエラー発生 : ",e)
 			print("10秒待機してやり直します")
@@ -96,7 +104,14 @@ def CalcMain(flag_just_time_1min, flag_just_time_1hour, data_now,data_sum, data_
 						print("損切り", end=',')
 						with open('1hour_eth_BB.csv', mode='a') as f:
 							print("損切り",end=",", file=f)
-						kline = GetKline()
+						while True:
+							kline = GetKline()
+							if kline == 0:
+								print('not json')
+								time.sleep(1)
+								continue
+							else:
+								break
 						if flag_position == "BUY":
 							money += (kline[0] - money_tmp)
 						else:
@@ -112,7 +127,14 @@ def CalcMain(flag_just_time_1min, flag_just_time_1hour, data_now,data_sum, data_
 					if flag_plus == -2 or flag_minus == -2:
 						# 決済処理
 						# デモ用
-						kline = GetKline()
+						while True:
+							kline = GetKline()
+							if kline == 0:
+								print('not json')
+								time.sleep(1)
+								continue
+							else:
+								break
 						if flag_position == "BUY":
 							money += (kline[0] - money_tmp)
 						else:
@@ -143,7 +165,14 @@ def CalcMain(flag_just_time_1min, flag_just_time_1hour, data_now,data_sum, data_
 						flag_minus = 0
 
 						# デモ用
-						kline = GetKline()
+						while True:
+							kline = GetKline()
+							if kline == 0:
+								print('not json')
+								time.sleep(1)
+								continue
+							else:
+								break
 						if flag_position == "BUY":
 							money_tmp = kline[0]
 						else:
