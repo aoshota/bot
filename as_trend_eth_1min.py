@@ -204,7 +204,6 @@ money_tmp = 0 # デモ用の売買の差引に使う変数
 while True:
 	data_now = GetRate()
 	if data_now == 0:
-		print("not json")
 		continue
 	flag_just_time = ExtractJustTime(data_now[0])
 	# デモ用

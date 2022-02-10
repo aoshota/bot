@@ -211,6 +211,8 @@ money_tmp = 0 # デモ用の売買の差引に使う変数
 # 1秒毎にAPIを叩いてレートを取得する
 while True:
 	data_now = GetRate()
+	if data_now == 0:
+		continue
 	flag_just_time_1min = ExtractJustTime_1min(data_now[0])
 	flag_just_time_30min = ExtractJustTime_30min(data_now[0])
 	# デモ用
