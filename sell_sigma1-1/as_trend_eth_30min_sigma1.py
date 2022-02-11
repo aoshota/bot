@@ -94,7 +94,7 @@ def CalcBB(data): # data = [close, ..., close]
 
 # エントリー、決済、損切りの計算
 # デモ用 money
-def CalcMain(flag_just_time_1min,flag_just_time_30min,element,money,money_tmp):
+def CalcMain(flag_just_time_1min,flag_just_time_30min,data_now,element,money,money_tmp):
 
 	# APIでポジションしているか確認する処理を追加
 
