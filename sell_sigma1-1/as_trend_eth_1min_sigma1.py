@@ -7,14 +7,34 @@ import numpy as np
 
 # パラメータ変更箇所はコメントに"パラメータ変更箇所"と記載している
 
-# GMOコインのAPI
-# 通過はpathのsymbolに記載(詳細はhttps://api.coin.z.com/docs/#ticker)
-# パラメータ変更箇所
+# 通貨はpathのsymbolに記載(詳細はhttps://api.coin.z.com/docs/#ticker)
 endPointPublic = 'https://api.coin.z.com/public'
 pathGetRate     = '/v1/ticker?symbol=ETH_JPY'
 pathGetKline     = '/v1/orderbooks?symbol=ETH_JPY'
+pathParams = '../params.txt'
+
+# パラメータを別ファイルから取得
+with open(pathParams) as f:
+	s = f.readlines()
+
+line_idx_s = s[0].find("=")
+line_idx_e = s[0].find("\n")
+line_token = s[0][line_idx_s+1:line_idx_e]
+api_idx_s = s[1].find("=")
+api_idx_e = s[1].find("\n")
+apiKey = s[1][api_idx_s+1:api_idx_e]
+secret_idx_s = s[2].find("=")
+secret_idx_e = s[2].find("\n")
+secretKey = s[2][secret_idx_s+1:secret_idx_e]
 
 # ********** function ****************
+# LINEに通知する関数
+def line_notify(text):
+	url = "https://notify-api.line.me/api/notify"
+	data = {"message" : text}
+	headers = {"Authorization": "Bearer " + line_token}
+	requests.post(url, data=data, headers=headers)
+
 # 現在のレートをAPIで取得
 def GetRate():
 	while True:
@@ -105,9 +125,11 @@ def CalcMain(flag_just_time,data_now,element,money,money_tmp):
 						else:
 							break
 					if element['flag_position'] == "BUY":
-						money += (kline[0] - money_tmp)
+						money += (kline[1] - money_tmp)
+						line_notify("損切り(ロング):" + str(kline[1]))
 					else:
-						money += (money_tmp - kline[1])
+						money += (money_tmp - kline[0])
+						line_notify("損切り(ショート):" + str(kline[0]))
 					element['flag_position'] = "NO"
 				elif int(data_now[1]) <= int(element['data_bb']['upper']) and element['flag_position'] == "BUY":
 					element['flag_plus'] -= 1
@@ -128,9 +150,11 @@ def CalcMain(flag_just_time,data_now,element,money,money_tmp):
 						else:
 							break
 					if element['flag_position'] == "BUY":
-						money += (kline[0] - money_tmp)
+						money += (kline[1] - money_tmp)
+						line_notify("決済(ロング):" + str(kline[1]))
 					else:
-						money += (money_tmp - kline[1])
+						money += (money_tmp - kline[0])
+						line_notify("決済(ショート):" + str(kline[0]))
 					element['flag_position'] = "NO"
 					element['flag_plus'] = 0
 					element['flag_minus'] = 0
@@ -167,8 +191,10 @@ def CalcMain(flag_just_time,data_now,element,money,money_tmp):
 							break
 					if element['flag_position'] == "BUY":
 						money_tmp = kline[0]
+						line_notify("注文処理(ロング):" + str(kline[0]))
 					else:
 						money_tmp = kline[1]
+						line_notify("注文処理(ショート):" + str(kline[1]))
 					print("注文処理", end=",")
 					with open('1min_eth_BB_sigma1.csv', mode='a') as f:
 						print("注文処理",end=",", file=f)
