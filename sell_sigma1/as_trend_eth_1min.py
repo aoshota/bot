@@ -67,30 +67,30 @@ def CalcBB(data): # data = [close, ..., close]
 
 # エントリー、決済、損切りの計算
 # デモ用 money
-def CalcMain(flag_just_time, data_now,data_sum, data_bb_20, cnt_bb_20, flag_plus, flag_minus, flag_position, money,money_tmp):
+def CalcMain(flag_just_time,data_now,element,money,money_tmp):
 
 	# APIでポジションしているか確認する処理を追加
 
 	kline = [] # デモ用
 
-	if flag_just_time: # 58~2秒のデータをdata_sumに格納
-		data_sum.append(int(data_now[1]))
-	elif len(data_sum) > 0: # 58~2秒以外かつdata_sumの要素が要素が0以上の時BBに使うデータを計算する
-		data_ave = sum(data_sum) / len(data_sum)
-		data_sum = []
-		data_bb_20.append(round(data_ave))
-		cnt_bb_20 += 1
-		if cnt_bb_20 == 20: # BBで使うデータが20個揃ったらBBを計算する
-			data_bb = CalcBB(data_bb_20) ## data_bb_20からBBを計算する
+	if flag_just_time: # 58~2秒のデータをelement['data_sum']に格納
+		element['data_sum'].append(int(data_now[1]))
+	elif len(element['data_sum']) > 0: # 58~2秒以外かつelement['data_sum']の要素が要素が0以上の時BBに使うデータを計算する
+		element['data_ave'] = sum(element['data_sum']) / len(element['data_sum'])
+		element['data_sum'] = []
+		element['data_bb_20'].append(round(element['data_ave']))
+		element['cnt_bb_20'] += 1
+		if element['cnt_bb_20'] == 20: # BBで使うデータが20個揃ったらBBを計算する
+			element['data_bb'] = CalcBB(element['data_bb_20']) ## element['data_bb_20']からBBを計算する
 			# デモ用
 			print("money=" + str(money) + ",close=" + str(data_now[1]),end=",")
-			print(data_bb,end=",")
+			print(element['data_bb'],end=",")
 			with open('1min_eth_BB.csv', mode='a') as f:
 				print("money=" + str(money) + ",close=" + str(data_now[1]),end=",", file=f)
-				print(data_bb,end=",", file=f)
+				print(element['data_bb'],end=",", file=f)
 			# エントリーまたは決済の処理
-			if flag_position == "BUY" or flag_position == "SELL": # ポジションが入っている時の処理
-				if (int(data_now[1]) <= int(data_bb['mean']) and flag_position == "BUY" ) or (int(data_now[1]) >= int(data_bb['mean']) and flag_position == "SELL"):
+			if element['flag_position'] == "BUY" or element['flag_position'] == "SELL": # ポジションが入っている時の処理
+				if (int(data_now[1]) <= int(element['data_bb']['mean']) and element['flag_position'] == "BUY" ) or (int(data_now[1]) >= int(element['data_bb']['mean']) and element['flag_position'] == "SELL"):
 					# 損切りの処理
 					# デモ用
 					print("損切り", end=',')
@@ -104,19 +104,19 @@ def CalcMain(flag_just_time, data_now,data_sum, data_bb_20, cnt_bb_20, flag_plus
 							continue
 						else:
 							break
-					if flag_position == "BUY":
+					if element['flag_position'] == "BUY":
 						money += (kline[0] - money_tmp)
 					else:
 						money += (money_tmp - kline[1])
-					flag_position = "NO"
-				elif int(data_now[1]) <= int(data_bb['upper']) and flag_position == "BUY":
-					flag_plus -= 1
-				elif int(data_now[1]) >= int(data_bb['lower']) and flag_position == "SELL":
-					flag_minus -= 1
+					element['flag_position'] = "NO"
+				elif int(data_now[1]) <= int(element['data_bb']['upper']) and element['flag_position'] == "BUY":
+					element['flag_plus'] -= 1
+				elif int(data_now[1]) >= int(element['data_bb']['lower']) and element['flag_position'] == "SELL":
+					element['flag_minus'] -= 1
 				else:
-					flag_plus = 0
-					flag_minus = 0
-				if flag_plus == -2 or flag_minus == -2:
+					element['flag_plus'] = 0
+					element['flag_minus'] = 0
+				if element['flag_plus'] == -2 or element['flag_minus'] == -2:
 					# 決済処理
 					# デモ用
 					while True:
@@ -127,34 +127,34 @@ def CalcMain(flag_just_time, data_now,data_sum, data_bb_20, cnt_bb_20, flag_plus
 							continue
 						else:
 							break
-					if flag_position == "BUY":
+					if element['flag_position'] == "BUY":
 						money += (kline[0] - money_tmp)
 					else:
 						money += (money_tmp - kline[1])
-					flag_position = "NO"
-					flag_plus = 0
-					flag_minus = 0
+					element['flag_position'] = "NO"
+					element['flag_plus'] = 0
+					element['flag_minus'] = 0
 					print("決済処理", end=",")
 					with open('1min_eth_BB.csv', mode='a') as f:
 						print("決済処理",end=",", file=f)
 			else: # ポジションが入っていない時の処理
-				if int(data_now[1]) >= int(data_bb['upper']):
-					flag_plus += 1
-					flag_minus = 0
-				elif int(data_now[1]) <= int(data_bb['lower']):
-					flag_minus += 1
-					flag_plus = 0
+				if int(data_now[1]) >= int(element['data_bb']['upper']):
+					element['flag_plus'] += 1
+					element['flag_minus'] = 0
+				elif int(data_now[1]) <= int(element['data_bb']['lower']):
+					element['flag_minus'] += 1
+					element['flag_plus'] = 0
 				else:
-					flag_plus = 0
-					flag_minus = 0
-				if flag_plus == 3 or flag_minus == 3:
+					element['flag_plus'] = 0
+					element['flag_minus'] = 0
+				if element['flag_plus'] == 3 or element['flag_minus'] == 3:
 					# 注文処理
-					if flag_plus == 3:
-						flag_position = "BUY"
+					if element['flag_plus'] == 3:
+						element['flag_position'] = "BUY"
 					else:
-						flag_position = "SELL"
-					flag_plus = 0
-					flag_minus = 0
+						element['flag_position'] = "SELL"
+					element['flag_plus'] = 0
+					element['flag_minus'] = 0
 
 					# デモ用
 					while True:
@@ -165,7 +165,7 @@ def CalcMain(flag_just_time, data_now,data_sum, data_bb_20, cnt_bb_20, flag_plus
 							continue
 						else:
 							break
-					if flag_position == "BUY":
+					if element['flag_position'] == "BUY":
 						money_tmp = kline[0]
 					else:
 						money_tmp = kline[1]
@@ -173,15 +173,15 @@ def CalcMain(flag_just_time, data_now,data_sum, data_bb_20, cnt_bb_20, flag_plus
 					with open('1min_eth_BB.csv', mode='a') as f:
 						print("注文処理",end=",", file=f)
 
-			data_bb_20 = data_bb_20[1:] # data_bb_20の先頭データを削除する
-			cnt_bb_20 = 19 # 直前の20個のデータから19個を使うので初回以降はcnt_bb_20=19とすることで1個だけ新しいデータを追加する
+			element['data_bb_20'] = element['data_bb_20'][1:] # element['data_bb_20']の先頭データを削除する
+			element['cnt_bb_20'] = 19 # 直前の20個のデータから19個を使うので初回以降はelement['cnt_bb_20']=19とすることで1個だけ新しいデータを追加する
 		# デモ用
-		print(data_now[0] +  ",flag_position=" + flag_position + ",flag_plus=" + str(flag_plus) + ",flag_minus=" + str(flag_minus))
+		print(data_now[0] +  ",element['flag_position']=" + element['flag_position'] + ",element['flag_plus']=" + str(element['flag_plus']) + ",element['flag_minus']=" + str(element['flag_minus']))
 		with open('1min_eth_BB.csv', mode='a') as f:
-			print(data_now[0] +  ",flag_position=" + flag_position + ",flag_plus=" + str(flag_plus) + ",flag_minus=" + str(flag_minus), file=f)
+			print(data_now[0] +  ",element['flag_position']=" + element['flag_position'] + ",element['flag_plus']=" + str(element['flag_plus']) + ",element['flag_minus']=" + str(element['flag_minus']), file=f)
 
 	# デモ用　money,money_tmp
-	return data_sum,data_bb_20,cnt_bb_20,flag_plus,flag_minus,flag_position,money,money_tmp
+	return element,money,money_tmp
 # ********** function ****************
 
 
@@ -197,6 +197,18 @@ flag_plus = 0 # +1σを3回連続で超えたらエントリー、+1σを2回連
 flag_minus = 0 # -1σを3回連続で超えたらエントリー、-1σを2回連続で超えたら決済 -> この条件を判断するためのカウンタ
 flag_position = "NO" # "":ポジションなし、"BUY":買い、"SELL":売り
 
+element = {
+	'data_sum': [],
+	'data_ave': 0,
+	'data_bb_20': [],
+	'data_bb': {},
+	'cnt_bb_20': 0,
+	'cnt_bb': 0,
+	'flag_plus': 0,
+	'flag_minus': 0,
+	'flag_position': "NO"
+}
+
 money = 0 # デモ用の所持金の変数
 money_tmp = 0 # デモ用の売買の差引に使う変数
 
@@ -208,7 +220,7 @@ while True:
 	flag_just_time = ExtractJustTime(data_now[0])
 	# デモ用
 	# ポジションの有無をAPIで取得するからflaf_positionは消す
-	data_sum,data_bb_20,cnt_bb_20,flag_plus,flag_minus,flag_position,money,money_tmp = CalcMain(flag_just_time,data_now,data_sum,data_bb_20,cnt_bb_20,flag_plus,flag_minus,flag_position,money,money_tmp)
+	element,money,money_tmp = CalcMain(flag_just_time,data_now,element,money,money_tmp)
 
 	time.sleep(1)
 # ******* main *************
