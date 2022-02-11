@@ -134,10 +134,12 @@ def CalcMain(flag_just_time_1min,flag_just_time_10min,element,money,money_tmp):
 								break
 						if element['flag_position'] == "BUY":
 							money += (kline[1] - money_tmp)
-							line_notify("損切り(ロング):" + str(kline[1]))
+							line_notify("\n損切り(ロング)10min:" + str(kline[1]))
+							line_notify("\nmoney:" + str(money))
 						else:
 							money += (money_tmp - kline[0])
-							line_notify("損切り(ショート):" + str(kline[0]))
+							line_notify("\n損切り(ショート)10min:" + str(kline[0]))
+							line_notify("\nmoney:" + str(money))
 						element['flag_position'] = "NO"
 					elif int(data_now[1]) <= int(element['data_bb']['upper']) and element['flag_position'] == "BUY":
 						element['flag_plus'] -= 1
@@ -159,10 +161,12 @@ def CalcMain(flag_just_time_1min,flag_just_time_10min,element,money,money_tmp):
 								break
 						if element['flag_position'] == "BUY":
 							money += (kline[1] - money_tmp)
-							line_notify("決済(ロング):" + str(kline[1]))
+							line_notify("決済(ロング)10min:" + str(kline[1]))
+							line_notify("\nmoney:" + str(money))
 						else:
 							money += (money_tmp - kline[0])
-							line_notify("決済(ショート):" + str(kline[0]))
+							line_notify("決済(ショート)10min:" + str(kline[0]))
+							line_notify("\nmoney:" + str(money))
 						element['flag_position'] = "NO"
 						element['flag_plus'] = 0
 						element['flag_minus'] = 0
@@ -199,10 +203,12 @@ def CalcMain(flag_just_time_1min,flag_just_time_10min,element,money,money_tmp):
 								break
 						if element['flag_position'] == "BUY":
 							money_tmp = kline[0]
-							line_notify("注文処理(ロング):" + str(kline[0]))
+							line_notify("注文処理(ロング)10min:" + str(kline[0]))
+							line_notify("\nmoney:" + str(money))
 						else:
 							money_tmp = kline[1]
-							line_notify("注文処理(ショート):" + str(kline[1]))
+							line_notify("注文処理(ショート)10min:" + str(kline[1]))
+							line_notify("\nmoney:" + str(money))
 						print("注文処理", end=",")
 						with open('10min_eth_BB_sigma1.csv', mode='a') as f:
 							print("注文処理",end=",", file=f)
