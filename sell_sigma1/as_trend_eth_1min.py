@@ -10,7 +10,7 @@ import numpy as np
 # GMOコインのAPI
 # 通過はpathのsymbolに記載(詳細はhttps://api.coin.z.com/docs/#ticker)
 # パラメータ変更箇所
-endPoint = 'https://api.coin.z.com/public'
+endPointPublic = 'https://api.coin.z.com/public'
 pathGetRate     = '/v1/ticker?symbol=ETH_JPY'
 pathGetKline     = '/v1/orderbooks?symbol=ETH_JPY'
 
@@ -19,7 +19,7 @@ pathGetKline     = '/v1/orderbooks?symbol=ETH_JPY'
 def GetRate():
 	while True:
 		try:
-			response = requests.get(endPoint + pathGetRate)
+			response = requests.get(endPointPublic + pathGetRate)
 			if 'json' in response.headers.get('content-type'):
 				data = [response.json()['data'][0]['timestamp'].replace('T',' ')[:-5],response.json()['data'][0]['last']]
 				return data
@@ -35,7 +35,7 @@ def GetRate():
 def GetKline():
 	while True:
 		try:
-			response = requests.get(endPoint + pathGetKline)
+			response = requests.get(endPointPublic + pathGetKline)
 			if 'json' in response.headers.get('content-type'):
 				data = response.json()
 				return int(data['data']['asks'][0]['price']), int(data['data']['bids'][0]['price'])
@@ -98,7 +98,7 @@ def CalcMain(flag_just_time,data_now,element,money,money_tmp):
 						print("損切り",end=",", file=f)
 					while True:
 						kline = GetKline()
-						if kline == 0:
+						if kline == 0: # APIでJSONが返ってこなかった時の処理
 							print('not json')
 							time.sleep(1)
 							continue
@@ -187,15 +187,15 @@ def CalcMain(flag_just_time,data_now,element,money,money_tmp):
 
 # ******* main *************
 # 変数
-data_sum = [] # BBで使うデータをリアルタイムデータの平均から算出するためのデータ
-data_ave = 0 # BBで使う1個のデータ
-data_bb_20 = [] # BBで使う20個のデータ
-data_bb = {} ## BB
-cnt_bb_20 = 0 # BBで使う20個のデータを取得する際に使うカウンタ
-cnt_bb = 0 # BBをdata_bbに保存する際に使うカウンタ
-flag_plus = 0 # +1σを3回連続で超えたらエントリー、+1σを2回連続で超えたら決済 -> この条件を判断するためのカウンタ
-flag_minus = 0 # -1σを3回連続で超えたらエントリー、-1σを2回連続で超えたら決済 -> この条件を判断するためのカウンタ
-flag_position = "NO" # "":ポジションなし、"BUY":買い、"SELL":売り
+# data_sum = [] # BBで使うデータをリアルタイムデータの平均から算出するためのデータ
+# data_ave = 0 # BBで使う1個のデータ
+# data_bb_20 = [] # BBで使う20個のデータ
+# data_bb = {} ## BB
+# cnt_bb_20 = 0 # BBで使う20個のデータを取得する際に使うカウンタ
+# cnt_bb = 0 # BBをdata_bbに保存する際に使うカウンタ
+# flag_plus = 0 # +1σを3回連続で超えたらエントリー、+1σを2回連続で超えたら決済 -> この条件を判断するためのカウンタ
+# flag_minus = 0 # -1σを3回連続で超えたらエントリー、-1σを2回連続で超えたら決済 -> この条件を判断するためのカウンタ
+# flag_position = "NO" # "":ポジションなし、"BUY":買い、"SELL":売り
 
 element = {
 	'data_sum': [],
@@ -215,7 +215,7 @@ money_tmp = 0 # デモ用の売買の差引に使う変数
 # 1秒毎にAPIを叩いてレートを取得する
 while True:
 	data_now = GetRate()
-	if data_now == 0:
+	if data_now == 0: # APIでJSONが返ってこなかった時の処理
 		continue
 	flag_just_time = ExtractJustTime(data_now[0])
 	# デモ用
